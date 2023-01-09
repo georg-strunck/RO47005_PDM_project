@@ -48,7 +48,6 @@ while(t<150):
 
 final_path_plot(path, objects_list, play_area, drone_trajectory, start, end)
 
-corperlia_path = zip(drone_trajectory['x']
 
 # Printing final solutions
 print('Total (cumulitive) squared error= ', np.round(tot_err),'\n')
