@@ -18,7 +18,7 @@ from operator import add    # needed for list addition with map()
 client, sim = initialize_simulation()
 
 # Get building sizes and positions
-num_buil = 11            # number of buildings
+num_buil = 13            # number of buildings
 pos_buil, bbox_bui = get_pos_and_bbox(num_buil, sim)
 
 # Export center positions of buildings
