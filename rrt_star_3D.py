@@ -237,7 +237,7 @@ class RRTStar(RRT):
 
 
 def main():
-    scenario = 1
+    scenario = 2 # was 1
     plt.close('all');
     print("start " + __file__)
     
@@ -296,12 +296,14 @@ def main():
              search_until_max_iter=False)
         path = rrt_star.planning()
         
+        
         if path is None:
             print("Cannot find path")
         else:
             print("found path!!")
+            print(type(path)) # nieuw
             rrt_star.final_path_plot(path)
-        
+            
             # opening the csv file in 'a+' mode
             file = open('final_path.csv', 'a+', newline ='')
  
@@ -312,3 +314,4 @@ def main():
         
 if __name__ == '__main__':
     main()
+    

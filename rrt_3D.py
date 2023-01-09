@@ -241,9 +241,6 @@ class RRT:
             print("helaas pindakaas")
         else: 
             fig = plt.figure()
-            plt.gcf().canvas.mpl_connect(
-                'key_release_event',
-                lambda event: [exit(0) if event.key == 'escape' else None])
             ax = fig.add_subplot(111, projection='3d')
             for i in range(len(self.obstacle_list)):
                 x = [self.obstacle_list[i][0]-self.obstacle_list[i][3]/2, self.obstacle_list[i][0]+self.obstacle_list[i][3]/2]
