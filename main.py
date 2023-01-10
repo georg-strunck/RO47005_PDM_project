@@ -17,6 +17,10 @@ environment = Create_path('bboxes_objects.csv', 'center_positions_objects.csv', 
 #make a global path through the defined environment
 path = environment.find_path_rrt_star()
 
+#calculate path length and print it
+length = environment.calc_path_length(path)
+print("the total distance of the path is:", length, "m")
+
 #define the gym environment
 env = gym.make('Quadrotor-v0')
 #set initial position of the drone to the first position of the path
@@ -27,7 +31,8 @@ E_tot = 0
 tot_err =  0
 dt = 0.01
 t = 0
-sim_time = 150
+sim_time = 130
+print("the average speed of the drone is:", length/sim_time*3.6, "km/h")
 
 #define the controller and initialse reference and drone trajectory
 controller = PDcontrolller()
@@ -75,4 +80,4 @@ print('Total energy used during flight= ', np.round(E_tot),'\n')
 
 # Below the total time for the trajectory to complete is printed
 # this total time is equal to the T variable as defined in the different functions within the paths.py
-print('Total time needed to complemete the trajectory path = 150 seconds')
+print('Total time needed to complemete the trajectory path =',sim_time ,'seconds')

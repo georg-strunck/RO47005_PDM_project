@@ -39,8 +39,7 @@ class PDcontrolller:
         cmd_thrust = 0
         cmd_moment = np.zeros((3,))
         cmd_q = np.zeros((4,))
-        
-        
+
         error_pos = state.get('x') - flat_output.get('x')
         error_vel = state.get('v') - flat_output.get('x_dot')
 

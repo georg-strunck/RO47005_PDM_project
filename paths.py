@@ -155,6 +155,14 @@ class Create_path:
             acc = [0,0,0]
         return pos, vel
     
+    def calc_path_length(self, path):
+        total_length = 0
+        for coor in range(len(path)-1):
+            start = np.array(path[coor])
+            end = np.array(path[coor+1])
+            total_length += np.sqrt(np.sum((end-start)**2))
+        return total_length
+    
     def find_path_rrt_star(self):
         """
         This function takes the defined environment and returns a path in this environment.
