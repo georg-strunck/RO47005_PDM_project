@@ -1,8 +1,12 @@
-# -*- coding: utf-8 -*-
 """
-Created on Tue Jan  3 16:00:22 2023
+Path planning Sample Code with RRT*
+author: Atsushi Sakai(@Atsushi_twi)
 
-@author: Tibbe Lukkassen
+adjusted by: Tibbe Lukkassen
+A large part of this file is created based on the code from https://github.com/AtsushiSakai/PythonRobotics/blob/master/PathPlanning/RRTStar/rrt_star.py
+The code is adjusted for use in 3D and small things are changed for the purpose of this project
+
+This file can be used seperatly to check how it works. It contains a main function which it will use when ran.
 """
 import math
 import matplotlib.pyplot as plt

@@ -1,25 +1,25 @@
-# -*- coding: utf-8 -*-
 """
-Created on Tue Jan  3 10:48:51 2023
+Path planning Sample Code with Randomized Rapidly-Exploring Random Trees (RRT)
+Based on code by: Atsushi Sakai(@Atsushi_twi)
 
-@author: Tibbe Lukkassen
+adjusted by: Tibbe Lukkassen
+A large part of this file is created based on the code from https://github.com/AtsushiSakai/PythonRobotics/blob/master/PathPlanning/RRT/rrt.py
+The code is adjusted for use in 3D and small things are changed for the purpose of this project
+
+This file can be used seperatly to check how it works. It contains a main function which it will use when ran.
 """
 import math
 import random
 import matplotlib.pyplot as plt
 import numpy as np
-
 from itertools import product, combinations
 
-
 show_animation = True
-
 
 class RRT:
     """
     Class for RRT planning
     """
-
     class Node:
         """
         RRT Node
@@ -120,6 +120,7 @@ class RRT:
 
         self.node_list = [self.start]
         for i in range(self.max_iter):
+            print("Iter:", i, ", number of nodes:", len(self.node_list))
             rnd_node = self.get_random_node()
             nearest_ind = self.get_nearest_node_index(rnd_node)
             nearest_node = self.node_list[nearest_ind] 

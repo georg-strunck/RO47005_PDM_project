@@ -1,30 +1,43 @@
+"""
+The code in this file is made for the purpose of this by group 12
+It is partly inspired by the code provided by the course RO47001 Robot Dynamics & Control from the TU Delft
+"""
+
 import gym
 import numpy as np 
-from paths import rrtstar_path, find_path_rrt_star, final_path_plot, load_object_list, play_area_from_objects
 from controller import PDcontrolller
+from paths import Create_path
+import csv
 
-env = gym.make('Quadrotor-v0')
-        
-objects_list = load_object_list('bboxes_objects.csv','center_positions_objects.csv')
-play_area = play_area_from_objects(objects_list)
+#define the start and endpoint for the simulation
 start = [-6, 2, 0]
 end = [60, -120, 0]
+#define the environment by the object csv files, the start and end postition and define wether to use RRTstar or RRT.
+environment = Create_path('bboxes_objects.csv', 'center_positions_objects.csv', start, end, use_star=True)
+#make a global path through the defined environment
+path = environment.find_path_rrt_star()
 
-path = find_path_rrt_star(objects_list, start, end, play_area)
-
+#define the gym environment
+env = gym.make('Quadrotor-v0')
+#set initial position of the drone to the first position of the path
 current_state = env.reset(position=path[0])
 
+#initialise variables to zero and set the time_steps and simulation time
 E_tot = 0
 tot_err =  0
 dt = 0.01
 t = 0
+sim_time = 150
 
+#define the controller and initialse reference and drone trajectory
 controller = PDcontrolller()
 ref_trajectory = {'x':[],'y':[],'z':[]}
 drone_trajectory = {'x':[],'y':[],'z':[]}
-while(t<150):
+
+#Simulate the drone following the global path using the PD controller
+while(t<sim_time):
     # --- the desired state ---
-    desired_state = rrtstar_path(t, path)
+    desired_state = environment.rrtstar_path_state(t, path, sim_time)
     
     control_variable = controller.control(desired_state,current_state)
     action = control_variable['cmd_motor_speeds']
@@ -46,8 +59,15 @@ while(t<150):
     current_state = obs
     t += dt
 
-final_path_plot(path, objects_list, play_area, drone_trajectory, start, end)
-
+#plot the final drone_trajectory and the global path in the environment
+environment.final_path_plot(path, drone_trajectory)
+#make a path suitable for coppelia_sim from the simulated drone trajectory
+coppelia_path = list(zip(drone_trajectory['x'],drone_trajectory['y'],drone_trajectory['z']))
+#save the coppelia_path to the csv file coppelia_path.csv
+file = open('coppelia_path.csv', 'a+', newline ='')
+with file:   
+    write = csv.writer(file)
+    write.writerows(coppelia_path)
 
 # Printing final solutions
 print('Total (cumulitive) squared error= ', np.round(tot_err),'\n')
@@ -55,4 +75,4 @@ print('Total energy used during flight= ', np.round(E_tot),'\n')
 
 # Below the total time for the trajectory to complete is printed
 # this total time is equal to the T variable as defined in the different functions within the paths.py
-print('Total time needed to complemete the trajectory path = 100 seconds')
+print('Total time needed to complemete the trajectory path = 150 seconds')

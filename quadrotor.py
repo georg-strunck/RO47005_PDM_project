@@ -1,3 +1,7 @@
+"""
+This file was created in the course RO47001 Robot Dynamics & Control from the TU Delft
+"""
+
 import numpy as np
 from gym import core, spaces
 from numpy.linalg import inv, norm
