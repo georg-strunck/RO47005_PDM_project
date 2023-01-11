@@ -31,7 +31,7 @@ E_tot = 0
 tot_err =  0
 dt = 0.01
 t = 0
-sim_time = 130
+sim_time = 80
 print("the average speed of the drone is:", length/sim_time*3.6, "km/h")
 
 #define the controller and initialse reference and drone trajectory
@@ -61,6 +61,7 @@ while(t<sim_time):
     drone_trajectory['x'].append(obs['x'][0])
     drone_trajectory['y'].append(obs['x'][1])
     drone_trajectory['z'].append(obs['x'][2])
+    
     current_state = obs
     t += dt
 

@@ -130,32 +130,31 @@ class Create_path:
                          "-k")
                 ax.plot3D([self.play_area[0],self.play_area[0]],[self.play_area[2],self.play_area[2]],[self.play_area[4],self.play_area[5]], color="black")
             
-            for coor in range(len(path)-1):
-                ax.plot3D([path[coor][0],path[coor+1][0]],[path[coor][1],path[coor+1][1]],[path[coor][2],path[coor+1][2]], color="red")
+            #for coor in range(len(path)-1):
+                #ax.plot3D([path[coor][0],path[coor+1][0]],[path[coor][1],path[coor+1][1]],[path[coor][2],path[coor+1][2]], color="red")
             
             ax.plot3D(drone_trajectory['x'],drone_trajectory['y'],drone_trajectory['z'], 'blue')
     
             plt.show()
-    
+       
     def tj_from_line(self, start_pos, end_pos, time_ttl, t_c):
         """
         This function is used to calculate the desired position and velocity over a certain start and end position of
         a line segment of the path. 
         """
+        
         start_pos = np.array(start_pos)
         end_pos = np.array(end_pos)
-        v_max = (end_pos-start_pos)*2/time_ttl
-        if (t_c >= 0 and t_c < time_ttl/2):
-            vel = v_max*t_c/(time_ttl/2)
-            pos = start_pos + t_c*vel/2
-            acc = [0,0,0]
-        else:
-            vel = v_max*(time_ttl-t_c)/(time_ttl/2)
-            pos = end_pos - (time_ttl-t_c)*vel/2
-            acc = [0,0,0]
+        v_avg = (end_pos-start_pos)/time_ttl
+        vel = v_avg
+        pos = end_pos - (time_ttl-t_c)*v_avg
+        acc = [0,0,0]
         return pos, vel
     
     def calc_path_length(self, path):
+        """
+        This function calculates the length of a path that is found by the RRT algorithm. 
+        """
         total_length = 0
         for coor in range(len(path)-1):
             start = np.array(path[coor])
@@ -180,13 +179,14 @@ class Create_path:
                  goal = self.end, 
                  play_area = self.play_area,
                  obstacle_list= self.obstacle_list,
-                 expand_dis=6.0,
+                 expand_dis=1.0,
                  path_resolution=0.1,
-                 goal_sample_rate=20,
-                 max_iter=500,
+                 goal_sample_rate=10,
+                 max_iter=5000,
                  margin = 2,
-                 connect_circle_dist=12.0,
-                 search_until_max_iter=False)
+                 connect_circle_dist=60.0,
+                 search_until_max_iter=True,
+                 animation = False)
             path = rrt_star.planning()
         else:
             print("looking for a path with RRT")
@@ -199,7 +199,8 @@ class Create_path:
                 path_resolution=0.1,
                 goal_sample_rate=20,
                 max_iter=500,
-                margin = 2
+                margin = 2,
+                animation = False
                 )
             path = rrt.planning()
         
@@ -233,7 +234,7 @@ class Create_path:
         yawdot = 0
         
         # The number of segments (lines)
-        num_segms=len(data)-1
+        num_segms=len(data)
       
         #time needed per line segment 
         segm_time = T/num_segms
@@ -253,7 +254,7 @@ class Create_path:
             pos, vel = self.tj_from_line(data[seg_id-2], data[seg_id-1], segm_time, t - segm_time*(seg_id-1))
         else:       # else stay at the last position in data
              pos = data[-1]
-                
+                       
         desired_state = dict([
             ('x', pos),  
             ('x_dot', vel),

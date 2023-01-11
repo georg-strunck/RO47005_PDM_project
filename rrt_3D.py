@@ -54,6 +54,7 @@ class RRT:
                  max_iter=300,
                  play_area=None,
                  margin = 0.2,
+                 animation = False
                  ):
         """
         Setting Parameter
@@ -76,6 +77,7 @@ class RRT:
         self.node_list = []
         self.fig = plt.figure()
         self.margin = margin
+        self.animation = animation
     
     def plot_objects(self,node):
         plt.clf()
@@ -112,7 +114,7 @@ class RRT:
         plt.show()
         plt.pause(0.001)
     
-    def planning(self, animation=True):
+    def planning(self):
         """
         rrt path planning
         animation: flag for animation on or off
@@ -142,9 +144,9 @@ class RRT:
                 if self.check_collision(final_node, self.obstacle_list):
                     return self.generate_final_course(len(self.node_list) - 1)
 
-            #if animation and i % 5:
-            #    self.draw_graph(rnd_node)
-            self.plot_objects(rnd_node)
+            if self.animation and i % 5:
+                self.plot_objects(rnd_node)
+            
 
         return None  # cannot find path
     
