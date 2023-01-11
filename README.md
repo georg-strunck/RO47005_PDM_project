@@ -17,6 +17,9 @@ To run the planner the following packages need to be installed and sourced in yo
 - ```math```
 - ```pyzmq```
 - ```cbor```
+- ```gym```
+- ```matplotlib```
+- ```csv```
 
 To install missing packages use ```pip install:```
 ```
