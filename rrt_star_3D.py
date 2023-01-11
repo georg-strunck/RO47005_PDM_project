@@ -35,6 +35,7 @@ class RRTStar(RRT):
                  margin = 0.2,
                  connect_circle_dist=4.0,
                  search_until_max_iter=False,
+                 animation = False
                  ):
         """
         Setting Parameter
@@ -44,7 +45,7 @@ class RRTStar(RRT):
         randArea:Random Sampling Area [min,max]
         """
         super().__init__(start, goal, obstacle_list, expand_dis,
-                         path_resolution, goal_sample_rate,max_iter, play_area, margin)
+                         path_resolution, goal_sample_rate,max_iter, play_area, margin,animation)
         self.connect_circle_dist = connect_circle_dist
         self.goal_node = self.Node(goal[0],goal[1],goal[2])
         self.search_until_max_iter = search_until_max_iter
@@ -77,10 +78,11 @@ class RRTStar(RRT):
                 else:
                     self.node_list.append(new_node)
 
-            #if animation:
-            #    self.draw_graph(rnd)
+
+            if self.animation:
+                self.plot_objects(new_node)
             
-            self.plot_objects(new_node)
+            
 
             if ((not self.search_until_max_iter)
                     and new_node):  # if reaches goal
@@ -227,6 +229,7 @@ class RRTStar(RRT):
                 near_node.path_y = edge_node.path_y
                 near_node.path_z = edge_node.path_z
                 near_node.parent = edge_node.parent
+                print("found imrpoved cost")
                 self.propagate_cost_to_leaves(new_node)
 
     def calc_new_cost(self, from_node, to_node):
@@ -263,7 +266,7 @@ def main():
              goal_sample_rate=20,
              max_iter=200,
              margin = 0.2,
-             connect_circle_dist=4.0,
+             connect_circle_dist=10.0,
              search_until_max_iter=False)
         path = rrt_star.planning()
         
