@@ -10,8 +10,8 @@
 """
 
 
-import time
-from my_utilities import *
+import time, sys
+from sim_utilities import *
 from operator import add    # needed for list addition with map()
 
 # Initialize simulation
@@ -33,10 +33,11 @@ quad_handle = sim.getObject('./Quadcopter')
 target_position = get_position(target_handle, sim)
 
 # Load path from csv file
-path_from_csv = np.genfromtxt("final_path.csv", delimiter=",")
+path_from_csv = np.genfromtxt("coppelia_path.csv", delimiter=",")
 
 # Set both the quadcopter and target to the starting position of the loaded path
 startpoint_list = path_from_csv[0].tolist()
+print(target_position, startpoint_list)
 sim.setObjectPosition(target_handle, sim.handle_world, startpoint_list)
 sim.setObjectPosition(quad_handle, sim.handle_world, startpoint_list)
 
@@ -53,31 +54,20 @@ while (t := sim.getSimulationTime()) < 40:
     # Fly through path
     for waypoint in my_drone_path_csv:
         # Print current time
-        print('Simulation time: ', round(sim.getSimulationTime(), 2), '  \t[s]')
-        # Convert waypoint to list for coppelia sim
-        waypoint_list = waypoint.tolist()
-        # Update the target position to the waypoint (so the drone will fly towards it)
-        sim.setObjectPosition(target_handle, sim.handle_world, waypoint_list)
-        # Step the simulation forward (time step)
-        client.step()
+        try:
+            print('Simulation time: ', round(sim.getSimulationTime(), 2), '  \t[s]')
+            # Convert waypoint to list for coppelia sim
+            waypoint_list = waypoint.tolist()
+            # Update the target position to the waypoint (so the drone will fly towards it)
+            sim.setObjectPosition(target_handle, sim.handle_world, waypoint_list)
+            # Step the simulation forward (time step)
+            client.step()
+        # If keyboard interrupt, stop the simulation
+        except KeyboardInterrupt:
+            print('Ctrl+C was, pressed, exiting simulation ...')
+            sim.stopSimulation()
     # Reverse path and fly back
     my_drone_path_csv = my_drone_path_csv[::-1]
 
 # Stop the simulation
 sim.stopSimulation()
-
-
-'''
-# This code was just used during programming, but kept for now as backup
-while (t := sim.getSimulationTime()) < 10:
-    print('Simulation time: ', round(t, 2), '\t[s]')
-    quadcopter_position = get_handle_and_pose(quad_handle, sim)
-
-    dist_tar_quad = calc_total_distance_xyz(np.array(quadcopter_position), np.array(target_position))
-    print(dist_tar_quad)
-    print(quadcopter_position, target_position)
-    target_position = get_handle_and_pose(target_handle, sim)
-    new_position = list(map(add, target_position, [0.01, 0.01, 0.01])) 
-    sim.setObjectPosition(target_handle, sim.handle_world, new_position)
-    client.step()
-'''

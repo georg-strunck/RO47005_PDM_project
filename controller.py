@@ -7,12 +7,18 @@ from scipy.spatial.transform import Rotation
 
 class PDcontrolller:
     def __init__(self):
-        # hover control gains
-        self.Kp = np.diag([12, 12, 18])
-        self.Kd = np.diag([8, 8, 6])
+        # # hover control gains PD1
+        # self.Kp = np.diag([12, 12, 18])
+        # self.Kd = np.diag([8, 8, 6])
+        # # angular control gains
+        # self.Kp_t = np.diag([1500, 1500, 1500])
+        # self.Kd_t = np.diag([240, 240, 240])
+        # hover control gains PD2
+        self.Kp = np.diag([10, 10, 16])
+        self.Kd = np.diag([7, 7, 5])
         # angular control gains
         self.Kp_t = np.diag([1500, 1500, 1500])
-        self.Kd_t = np.diag([240, 240, 240])
+        self.Kd_t = np.diag([260, 260, 260])
         m = 0.030  # weight (in kg) with 5 vicon markers (each is about 0.25g)
         g = 9.81  # gravitational constant
         I = np.array([[1.43e-5, 0, 0],

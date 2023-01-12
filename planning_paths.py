@@ -182,10 +182,10 @@ class Create_path:
                  expand_dis=1.0,
                  path_resolution=0.1,
                  goal_sample_rate=10,
-                 max_iter=500,
+                 max_iter=5000,
                  margin = 2,
-                 connect_circle_dist=60.0,
-                 search_until_max_iter=True,
+                 connect_circle_dist=50.0,
+                 search_until_max_iter=False,
                  animation = False)
             path = rrt_star.planning()
         else:
@@ -195,10 +195,10 @@ class Create_path:
                 goal= self.end,
                 obstacle_list=self.obstacle_list,
                 play_area=self.play_area,
-                expand_dis=6.0,
+                expand_dis=1.0,
                 path_resolution=0.1,
                 goal_sample_rate=20,
-                max_iter=500,
+                max_iter=5000,
                 margin = 2,
                 animation = False
                 )
