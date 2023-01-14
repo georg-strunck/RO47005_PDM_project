@@ -15,11 +15,23 @@ end = [60, -120, 0]
 #define the environment by the object csv files, the start and end postition and define wether to use RRTstar or RRT.
 environment = Create_path('bboxes_objects.csv', 'center_positions_objects.csv', start, end, use_star=True)
 #make a global path through the defined environment
-path = environment.find_path_rrt_star()
+#path = environment.find_path_rrt_star()
 
+path = [[60, -120, 0],
+  [60.0123720001508, -119.92776997158217, 0.12743416877885755],
+  [59.844397396140856, -113.26271340216552, 11.393357646585908],
+  [41.91049414309742, -90.03927322124242, 50.933986904310046],
+  [37.62405658809566, -82.77688892638396, 58.323578903522446],
+  [31.28386964288192, -46.08210466845834, 75.43466078587905],
+  [28.835528338388468, -25.517003401947076, 72.03312032281296],
+  [22.102081888368037, -18.98447164292926, 52.43364057081649],
+  [9.832018114757643, -6.0459272122380145, 22.020165209500444],
+  [-6, 2, 0]]
+
+#Smoothen the path to a max sharp angle of 1
+path = environment.remove_sharp_angles(path, 1)
 #calculate path length and print it
 length = environment.calc_path_length(path)
-print("the total distance of the path is:", length, "m")
 
 #define the gym environment
 env = gym.make('Quadrotor-v0')
@@ -31,8 +43,11 @@ E_tot = 0
 tot_err =  0
 dt = 0.01
 t = 0
-sim_time = 80
-print("the average speed of the drone is:", length/sim_time*3.6, "km/h")
+
+#Set the average speed in km/h
+v_avg = 12 #km/h
+
+sim_time = length/(v_avg/3.6)
 
 #define the controller and initialse reference and drone trajectory
 controller = PDcontrolller()
@@ -76,6 +91,9 @@ with file:
     write.writerows(coppelia_path)
 
 # Printing final solutions
+print("the total distance of the path is:", length, "m")
+print("the average speed of the drone is:", length/sim_time*3.6, "km/h")
+
 print('Total (cumulitive) squared error= ', np.round(tot_err),'\n')
 print('Total energy used during flight= ', np.round(E_tot),'\n')
 
