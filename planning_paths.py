@@ -130,8 +130,8 @@ class Create_path:
                          "-k")
                 ax.plot3D([self.play_area[0],self.play_area[0]],[self.play_area[2],self.play_area[2]],[self.play_area[4],self.play_area[5]], color="black")
             
-            #for coor in range(len(path)-1):
-                #ax.plot3D([path[coor][0],path[coor+1][0]],[path[coor][1],path[coor+1][1]],[path[coor][2],path[coor+1][2]], color="red")
+            for coor in range(len(path)-1):
+                ax.plot3D([path[coor][0],path[coor+1][0]],[path[coor][1],path[coor+1][1]],[path[coor][2],path[coor+1][2]], color="red")
             
             ax.plot3D(drone_trajectory['x'],drone_trajectory['y'],drone_trajectory['z'], 'blue')
     
@@ -149,6 +149,7 @@ class Create_path:
         vel = v_avg
         pos = end_pos - (time_ttl-t_c)*v_avg
         acc = [0,0,0]
+        
         return pos, vel
     
     def calc_path_length(self, path):
@@ -161,6 +162,77 @@ class Create_path:
             end = np.array(path[coor+1])
             total_length += np.sqrt(np.sum((end-start)**2))
         return total_length
+    
+    def calc_angles(self,path):  
+        """
+        This function calculates the angles between the different segments of a path
+        """
+        angles = []
+        for coor in range(len(path)-2):  
+            start = np.array(path[coor])
+            end = np.array(path[coor+1])
+            follow = np.array(path[coor+2])
+            
+            dist_1 = np.sqrt(np.sum((end-start)**2))
+            dist_2 = np.sqrt(np.sum((follow-end)**2))
+            
+            x_dif_1 = end[0]-start[0]
+            y_dif_1 = end[1]-start[1]
+            z_dif_1 = end[2]-start[2]
+            x_dif_2 = follow[0] - end[0]
+            y_dif_2 = follow[1] - end[1]
+            z_dif_2 = follow[2] - end[2]
+            angle = np.rad2deg(np.arccos((x_dif_1*x_dif_2+y_dif_1*y_dif_2+z_dif_1*z_dif_2)/(dist_1*dist_2)))
+            angles.append(angle)
+        return(angles)
+    
+    def normalize(self,v):
+        norm = np.linalg.norm(v)
+        if norm == 0: 
+           return v
+        return v / norm
+    
+    def remove_sharp_angles(self,path,max_angle):
+        """
+        This function first calculates the angles between the different segments of the path
+        If the angle is larger than the max_angle it will add points to make the path smoother
+        """
+        angles = self.calc_angles(path)
+        filtered_path = [path[0]]
+        x_old = 0
+        perc = 0.2
+        for i,angle in enumerate(angles):
+            start = np.array(path[i])
+            end = np.array(path[i+1])
+            follow = np.array(path[i+2])
+            len_1 = np.sqrt(np.sum((end-start)**2))
+            len_2 = np.sqrt(np.sum((follow-end)**2))
+            if angle>max_angle:
+                if len_1*perc > 3:
+                    dist_1 = 3 #len_1*(perc)
+                else:
+                    dist_1 = len_1*(perc)
+                if len_2*perc > 3:
+                    dist_2 = 3
+                else:
+                    dist_2 = len_2*(perc)
+                dir_1 = self.normalize(end-start)
+                dir_2 = self.normalize(follow-end)
+                
+                new_point_1 = end - dir_1*dist_1
+                new_point_2 = end + dir_2*dist_2
+
+                filtered_path.append(new_point_1.tolist())
+                filtered_path.append(new_point_2.tolist())           
+            else:
+                filtered_path.append(path[i+1])
+        filtered_path.append(path[-1])  
+        
+        angles_2 = self.calc_angles(filtered_path)
+               
+        if (any(angle > max_angle for angle in angles_2)):
+            filtered_path = self.remove_sharp_angles(filtered_path,max_angle)
+        return filtered_path
     
     def find_path_rrt_star(self):
         """
@@ -221,10 +293,29 @@ class Create_path:
         """
         This function takes a path with certain checkpoints as an input and a certain time
         It then outputs a desired state for that time and the position it the drone should have on this path
-        This can be used in the simulation of the drone. 
+        This can be used in the simulation of the drone. This desired position and state are calculated such
+        that the velocitie over the complete path is constant. 
         """
         data = list(path)
-            
+        
+        segm_length = []
+        segm_time = []
+        total_length = 0
+        for coor in range(len(path)-1):
+            start = np.array(path[coor])
+            end = np.array(path[coor+1])
+            dist = np.sqrt(np.sum((end-start)**2))
+            total_length += dist
+            segm_length.append(dist)
+        
+        time = 0
+        tim_for_seg = []
+        for coor in range(len(path)-1):
+            time += (segm_length[coor]/total_length)*sim_time
+            tijd = (segm_length[coor]/total_length)*sim_time
+            segm_time.append(time) 
+            tim_for_seg.append(tijd)
+
         T=sim_time
         vel = [0,0,0]
         pos = data[0]
@@ -232,29 +323,26 @@ class Create_path:
         acc = [0,0,0]
         yaw = 0
         yawdot = 0
-        
-        # The number of segments (lines)
-        num_segms=len(data)
-      
-        #time needed per line segment 
-        segm_time = T/num_segms
-        
-        progress = t/T          # percentage of where we are
+              
+        # percentage of where we are
         if (t<T-0.01):
-            seg_id_float = progress*num_segms   # where we are in the segments
-            seg_id = np.floor(seg_id_float)     # round down --> this is the position we currently started from going to the next
-            seg_id = int(seg_id+1)
+            for i in range(len(segm_time)):
+                if t < segm_time[i]:
+                    seg_id = i
+                    break   
         else:
-            seg_id = num_segms
+            seg_id = len(segm_time)-1
     
-        if (t < segm_time):     # if we are not yet at the starting position data[0], go from pos to data[0]
-            pos, vel = self.tj_from_line(pos,data[0],segm_time,t)
+        if (t < segm_time[0]):     # if we are not yet at the starting position data[0], go from pos to data[0]
+            pos, vel = self.tj_from_line(pos,data[1],segm_time[0],t)
         
-        elif (t < seg_id*segm_time):  # if time smaller than T (end time) then update position based on where we are now (seg_id)
-            pos, vel = self.tj_from_line(data[seg_id-2], data[seg_id-1], segm_time, t - segm_time*(seg_id-1))
+        elif (t < segm_time[seg_id]):  # if time smaller than T (end time) then update position based on where we are now (seg_id)
+            pos, vel = self.tj_from_line(data[seg_id], data[seg_id+1], tim_for_seg[seg_id], t-segm_time[seg_id-1] )
+        
         else:       # else stay at the last position in data
-             pos = data[-1]
-                       
+             pos = data[-1]     
+             
+        
         desired_state = dict([
             ('x', pos),  
             ('x_dot', vel),

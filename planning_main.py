@@ -22,6 +22,10 @@ environment = Create_path('bboxes_objects.csv', 'center_positions_objects.csv', 
 # make a global path through the defined environment
 path = environment.find_path_rrt_star()
 
+
+#Smoothen the path to a max sharp angle of 3
+path = environment.remove_sharp_angles(path, 3)
+
 #calculate path length and print it
 length = environment.calc_path_length(path)
 print("the total distance of the path is:", length, "m")
@@ -36,7 +40,12 @@ E_tot = 0
 tot_err =  0
 dt = 0.01
 t = 0
-sim_time = 99
+
+#Set the average speed in km/h
+v_avg = 12 #km/h
+
+sim_time = length/(v_avg/3.6)
+
 print("the average speed of the drone is:", length/sim_time*3.6, "km/h")
 
 #define the controller and initialse reference and drone trajectory
